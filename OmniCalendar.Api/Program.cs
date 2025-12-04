@@ -66,6 +66,25 @@ if (app.Environment.IsDevelopment())
 {
     // Serves OpenAPI document at /openapi/v1.json
     app.MapOpenApi();
+
+    // Serves Swagger UI at /swagger
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/openapi/v1.json", "My API v1"));
+
+    // Print clickable link only in Development, and only once
+    app.Lifetime.ApplicationStarted.Register(() =>
+    {
+        var url = app.Environment.IsDevelopment()
+            ? $"{app.Urls.First()}/swagger"
+            : null;
+
+        if (url != null)
+        {
+            Console.WriteLine();
+            Console.WriteLine("Swagger UI is ready!");
+            Console.WriteLine($"→ Open: \u001b]8;;{url}\u001b\\{url}\u001b]8;;\u001b\\");
+            Console.WriteLine();
+        }
+    });
 }
 
 app.Run();
