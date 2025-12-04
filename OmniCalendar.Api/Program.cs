@@ -2,6 +2,10 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using OmniCalendar.Api.Application.Auth;
+using OmniCalendar.Api.Application.Dashboard;
+using OmniCalendar.Api.Application.Holidays;
+using OmniCalendar.Api.Application.Tasks;
 using OmniCalendar.Api.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,17 +42,18 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IHolidayService, HolidayService>();
+builder.Services.AddHttpClient("calendarific");
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
 
 app.UseHttpsRedirection();
 
@@ -56,5 +61,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+if (app.Environment.IsDevelopment())
+{
+    // Serves OpenAPI document at /openapi/v1.json
+    app.MapOpenApi();
+}
 
 app.Run();
